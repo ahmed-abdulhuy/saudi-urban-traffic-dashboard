@@ -52,7 +52,7 @@ export default function MapViewer(): React.JSX.Element {
       style: "https://tiles.openfreemap.org/styles/liberty",
       center: [46.6753, 24.7136],
       zoom: 14,
-      attributionControl: true,
+      // attributionControl: true,
     });
 
     mapRef.current = map;
