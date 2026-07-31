@@ -2,7 +2,7 @@
 const nextConfig = {
   output: 'export', // Outputs a static HTML/CSS/JS "out" folder
   images: {
-    unoptimize: true, // Disables server-based image optimization
+    unoptimized: true, // Disables server-based image optimization
   },
   // OPTIONAL: Only uncomment the line below if you are NOT using a custom domain.
   basePath: '/saudi-urban-traffic-dashboard', 
