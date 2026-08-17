@@ -5,7 +5,7 @@ const nextConfig = {
     unoptimized: true, // Disables server-based image optimization
   },
   // OPTIONAL: Only uncomment the line below if you are NOT using a custom domain.
-  basePath: '/saudi-urban-traffic-dashboard', 
+  basePath: process.env.GITHUB_ACTIONS ? '/saudi-urban-traffic-dashboard' : '', 
 };
 
 module.exports = nextConfig;
