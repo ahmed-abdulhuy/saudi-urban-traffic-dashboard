@@ -53,9 +53,12 @@ const cities = {
     starting_date: "01/04/2026",
     ending_date: "15/04/2026",
     stats: {
-      minTLI: { value: "1.0105" },
-      avgTLI: { value: "1.0562" },
-      maxTLI: { value: "1.1136" },
+      // minTLI: { value: "1.0105" },
+      // avgTLI: { value: "1.0562" },
+      // maxTLI: { value: "1.1136" },
+      minTLI: { value: "0.99" },
+      avgTLI: { value: "0.95" },
+      maxTLI: { value: "0.90" },
     },
     // worstDay: {
     //   date: "February 13, Thursday",

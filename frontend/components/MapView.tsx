@@ -84,7 +84,7 @@ export default function MapViewer(): React.JSX.Element {
       
       map.addSource("traffic-hex", {
           type: "geojson",
-          data: "hexagon_congestion.geojson",
+          data: "congestion_hexagon_Riyadh.geojson",
       });
   
       map.addLayer({
