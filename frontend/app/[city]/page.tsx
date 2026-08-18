@@ -31,14 +31,14 @@ export default async function CityDashboardPage({
 
   return (
     <div className="wrap">
-      {/* <CitySwitcher activeSlug={city.slug} />
+      <CitySwitcher activeSlug={city.slug} />
 
       <div className="eyebrow">Traffic overview</div>
       <h1 className="title">
         {city.name}, {city.country} <span className="flag" />
-      </h1> */}
+      </h1>
 
-      <MapView />
+      <MapView cityGeojsonFile={city.geojsonFile} cords={city.mapCenter} />
 
       {/* <HexMap seed={city.mapSeed} /> */}
 

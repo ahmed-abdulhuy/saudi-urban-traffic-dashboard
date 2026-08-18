@@ -38,7 +38,7 @@ function tileBounds(lat: number, lon: number): TileBounds {
   return [north, west, south, east];
 }
 
-export default function MapViewer(): React.JSX.Element {
+export default function MapViewer({ cityGeojsonFile, cords }: { cityGeojsonFile: string, cords: [number, number] }): React.JSX.Element {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<Map | null>(null);
 
@@ -50,7 +50,7 @@ export default function MapViewer(): React.JSX.Element {
     const map = new maplibregl.Map({
       container: mapContainerRef.current,
       style: "https://tiles.openfreemap.org/styles/liberty",
-      center: [46.6753, 24.7136],
+      center: cords,
       zoom: 14,
       // attributionControl: true,
     });
@@ -84,7 +84,7 @@ export default function MapViewer(): React.JSX.Element {
       
       map.addSource("traffic-hex", {
           type: "geojson",
-          data: "congestion_hexagon_Riyadh.geojson",
+          data: cityGeojsonFile,
       });
   
       map.addLayer({
