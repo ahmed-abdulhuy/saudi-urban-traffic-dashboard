@@ -32,6 +32,81 @@ a {
   padding: 40px 20px 80px;
 }
 
+/* ---------- Site header ---------- */
+.site-header {
+  background: var(--paper);
+  border-bottom: 1px solid var(--line);
+}
+.site-header-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.site-logo {
+  font-size: 20px;
+  color: var(--accent-red);
+  line-height: 1;
+}
+.site-title {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.wrap {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 40px 20px 80px;
+}
+
+.site-nav {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+.site-nav a {
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 6px 12px;
+  border-radius: 999px;
+}
+.site-nav a:hover {
+  color: var(--ink);
+  background: var(--panel);
+}
+.site-nav a.active {
+  color: #fff;
+  background: var(--accent-red);
+}
+
+.site-nav {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+.site-nav a {
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 6px 12px;
+  border-radius: 999px;
+}
+.site-nav a:hover {
+  color: var(--ink);
+  background: var(--panel);
+}
+.site-nav a.active {
+  color: #fff;
+  background: var(--accent-red);
+}
+
+
 /* ---------- City switcher ---------- */
 .city-switcher {
   display: flex;
@@ -156,6 +231,63 @@ h1.title .flag {
   letter-spacing: 0.05em;
 }
 
+.section-2025 a {
+  color: var(--accent-red);
+  text-decoration: underline;
+}
+ 
+.about-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--paper);
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 16px 0;
+  font-size: 13px;
+}
+.about-table th,
+.about-table td {
+  text-align: left;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+}
+.about-table th {
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.about-table tr:last-child td {
+  border-bottom: none;
+}
+.about-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+ 
+.about-list {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+ 
+@media (max-width: 640px) {
+  .about-table {
+    font-size: 12px;
+  }
+  .about-table th,
+  .about-table td {
+    padding: 8px 10px;
+  }
+}
+
 /* ---------- 2025 section ---------- */
 .section-2025 {
   background: var(--panel);
@@ -277,6 +409,172 @@ h1.title .flag {
   max-width: 80px;
 }
 
+.card.chart {
+  grid-column: span 2;
+}
+.card.chart .label {
+  text-align: center;
+  margin-bottom: 12px;
+}
+.bars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 90px;
+  gap: 3px;
+  margin-bottom: 8px;
+}
+.bar-group {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  flex: 1;
+  justify-content: center;
+}
+.bar {
+  width: 6px;
+  border-radius: 2px 2px 0 0;
+}
+.bar.y2025 {
+  background: var(--accent-red);
+}
+.bar.y2024 {
+  background: var(--accent-blue);
+}
+.month-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 8px;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+.month-labels span {
+  flex: 1;
+  text-align: center;
+}
+.legend {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.legend .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 5px;
+}
+
+/* ---------- 2025 section ---------- */
+.section-2025 {
+  background: var(--panel);
+  border-radius: 16px;
+  margin-top: 40px;
+  padding: 40px 32px;
+}
+.section-title {
+  text-align: center;
+  font-size: 18px;
+  margin: 0 0 10px;
+}
+.section-desc {
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+  max-width: 560px;
+  margin: 0 auto 20px;
+  line-height: 1.6;
+}
+.toggle-row {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 28px;
+}
+.toggle {
+  display: inline-flex;
+  background: var(--paper);
+  border-radius: 999px;
+  padding: 3px;
+  border: 1px solid var(--line);
+}
+.toggle button {
+  border: none;
+  background: transparent;
+  padding: 6px 20px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--muted);
+}
+.toggle button.active {
+  background: var(--accent-red);
+  color: #fff;
+}
+ 
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+.card {
+  background: var(--paper);
+  border-radius: 12px;
+  padding: 16px;
+}
+.card .label {
+  font-size: 11px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.card .value {
+  font-size: 22px;
+  font-weight: 700;
+}
+.card .value small {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+}
+.card .sub {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+ 
+.card.worst {
+  grid-column: span 2;
+}
+.card.worst .label {
+  color: var(--accent-red);
+  text-align: center;
+}
+.card.worst .day {
+  text-align: center;
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+.worst-stats {
+  display: flex;
+  justify-content: space-around;
+}
+.worst-stats div {
+  text-align: center;
+}
+.worst-stats .v {
+  font-weight: 700;
+  font-size: 14px;
+}
+.worst-stats .l {
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 2px;
+  max-width: 80px;
+}
+ 
 .card.chart {
   grid-column: span 2;
 }

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 import "./globals.css";
+import Header from "@/components/Header";
 
 export const metadata: Metadata = {
   title: "Traffic Dashboard",
@@ -17,7 +18,11 @@ export default function RootLayout({
 }: RootLayoutProps): React.JSX.Element {
   return (
     <html lang="en">
-      <body>{children}</body>
+
+      <body>
+        <Header />
+        {children}
+      </body>
     </html>
   );
 }
