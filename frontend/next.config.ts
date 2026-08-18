@@ -1,11 +1,19 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  output: 'export', // Outputs a static HTML/CSS/JS "out" folder
+import type { NextConfig } from 'next';
+
+const nextConfig: NextConfig = {
+  output: 'export',
+
+  basePath: process.env.GITHUB_ACTIONS
+    ? '/saudi-urban-traffic-dashboard'
+    : '',
+
+  assetPrefix: process.env.GITHUB_ACTIONS
+    ? '/saudi-urban-traffic-dashboard/'
+    : '',
+
   images: {
-    unoptimized: true, // Disables server-based image optimization
+    unoptimized: true,
   },
-  // OPTIONAL: Only uncomment the line below if you are NOT using a custom domain.
-  basePath: process.env.GITHUB_ACTIONS ? '/saudi-urban-traffic-dashboard' : '', 
 };
 
-module.exports = nextConfig;
+export default nextConfig;
