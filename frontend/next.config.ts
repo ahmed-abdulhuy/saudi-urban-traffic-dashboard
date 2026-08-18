@@ -2,9 +2,6 @@ import type { NextConfig } from 'next';
 
 const isGitHubPages = process.env.GITHUB_ACTIONS === 'true';
 
-console.log('GITHUB_ACTIONS:', process.env.GITHUB_ACTIONS);
-console.log('isGitHubPages:', isGitHubPages);
-
 const nextConfig: NextConfig = {
   output: 'export',
 
@@ -13,7 +10,8 @@ const nextConfig: NextConfig = {
     : '',
 
   images: {
-    unoptimized: true,
+    loader: 'custom',
+    loaderFile: './app/lib/imageLoader.ts',
   },
 };
 
