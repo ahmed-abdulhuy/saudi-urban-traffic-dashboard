@@ -62,16 +62,16 @@ export default function MapViewer(): React.JSX.Element {
     const [north, west, south, east] = tileBounds(24.7136, 46.6753);
 
     map.on("load", () => {
-      map.addSource("traffic", {
-        type: "image",
-        url: "/example.png",
-        coordinates: [
-          [west, north],
-          [east, north],
-          [east, south],
-          [west, south],
-        ],
-      });
+      // map.addSource("traffic", {
+      //   type: "image",
+      //   url: "/example.png",
+      //   coordinates: [
+      //     [west, north],
+      //     [east, north],
+      //     [east, south],
+      //     [west, south],
+      //   ],
+      // });
 
       // map.addLayer({
       //   id: "traffic",
