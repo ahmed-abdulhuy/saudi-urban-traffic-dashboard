@@ -41,3 +41,6 @@ yarn-error.log*
 next-env.d.ts
 
 example.png
+
+.venv
+__pycache__

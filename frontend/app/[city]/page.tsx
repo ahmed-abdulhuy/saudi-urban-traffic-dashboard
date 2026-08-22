@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getCityData, getAllCitySlugs } from "@/data/cities";
+import { getAllCitySlugs } from "@/data/cities";
 import CitySwitcher from "@/components/CitySwitcher";
 import HexMap from "@/components/HexMap";
 import MapView from "@/components/MapView";
@@ -19,15 +19,34 @@ export function generateStaticParams(): { city: string }[] {
   }));
 }
 
+async function getCityData(citySlug: string) {
+  const response = await fetch(
+    `http://localhost:8000/city/${encodeURIComponent(citySlug)}`,
+    {
+      // Remove this if you want Next.js to cache the response.
+      cache: "no-store",
+    }
+  );
+
+  if (!response.ok) {
+    return null;
+  }
+
+  return response.json();
+}
+
+
 export default async function CityDashboardPage({
   params,
 }: CityDashboardPageProps) {
   const { city: citySlug } = await params;
-  const city = getCityData(citySlug);
+  const city = await getCityData(citySlug);
 
   if (!city) {
     notFound();
   }
+
+  console.log("City data:", city);
 
   return (
     <div className="wrap">
@@ -38,7 +57,7 @@ export default async function CityDashboardPage({
         {city.name}, {city.country} <span className="flag" />
       </h1>
 
-      <MapView cityGeojsonFile={city.geojsonFile} cords={city.mapCenter} />
+      <MapView city_name={city.slug} cords={city.mapCenter} />
 
       {/* <HexMap seed={city.mapSeed} /> */}
 

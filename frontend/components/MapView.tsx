@@ -4,41 +4,41 @@ import { useEffect, useRef } from "react";
 import maplibregl, { Map } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 
-type TileBounds = [
-  north: number,
-  west: number,
-  south: number,
-  east: number,
-];
+// type TileBounds = [
+//   north: number,
+//   west: number,
+//   south: number,
+//   east: number,
+// ];
 
 // Returns the tile bounds as [north, west, south, east]
-function tileBounds(lat: number, lon: number): TileBounds {
-  const zoom = 14;
-  const radius = 6;
+// function tileBounds(lat: number, lon: number): TileBounds {
+//   const zoom = 14;
+//   const radius = 6;
 
-  const latRad = (lat * Math.PI) / 180;
-  const n = 2 ** zoom;
+//   const latRad = (lat * Math.PI) / 180;
+//   const n = 2 ** zoom;
 
-  const x = Math.floor(((lon + 180) / 360) * n);
-  const y = Math.floor(
-    ((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2) * n,
-  );
+//   const x = Math.floor(((lon + 180) / 360) * n);
+//   const y = Math.floor(
+//     ((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2) * n,
+//   );
 
-  const west = ((x - radius) / n) * 360 - 180;
-  const east = ((x + radius + 1) / n) * 360 - 180;
+//   const west = ((x - radius) / n) * 360 - 180;
+//   const east = ((x + radius + 1) / n) * 360 - 180;
 
-  const north =
-    (Math.atan(Math.sinh(Math.PI * (1 - (2 * (y - radius)) / n))) * 180) /
-    Math.PI;
+//   const north =
+//     (Math.atan(Math.sinh(Math.PI * (1 - (2 * (y - radius)) / n))) * 180) /
+//     Math.PI;
 
-  const south =
-    (Math.atan(Math.sinh(Math.PI * (1 - (2 * (y + radius + 1)) / n))) * 180) /
-    Math.PI;
+//   const south =
+//     (Math.atan(Math.sinh(Math.PI * (1 - (2 * (y + radius + 1)) / n))) * 180) /
+//     Math.PI;
 
-  return [north, west, south, east];
-}
+//   return [north, west, south, east];
+// }
 
-export default function MapViewer({ cityGeojsonFile, cords }: { cityGeojsonFile: string, cords: [number, number] }): React.JSX.Element {
+export default function MapViewer({ city_name, cords }: { city_name: string, cords: [number, number] }): React.JSX.Element {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<Map | null>(null);
 
@@ -58,61 +58,82 @@ export default function MapViewer({ cityGeojsonFile, cords }: { cityGeojsonFile:
     mapRef.current = map;
 
     map.addControl(new maplibregl.NavigationControl(), "top-right");
+    // try {
+        
 
-    const [north, west, south, east] = tileBounds(24.7136, 46.6753);
+    try {
+      map.on("load", async () => {
+        // map.addSource("traffic", {
+        //   type: "image",
+        //   url: "/example.png",
+        //   coordinates: [
+        //     [west, north],
+        //     [east, north],
+        //     [east, south],
+        //     [west, south],
+        //   ],
+        // });
 
-    map.on("load", () => {
-      // map.addSource("traffic", {
-      //   type: "image",
-      //   url: "/example.png",
-      //   coordinates: [
-      //     [west, north],
-      //     [east, north],
-      //     [east, south],
-      //     [west, south],
-      //   ],
-      // });
+        // map.addLayer({
+        //   id: "traffic",
+        //   type: "raster",
+        //   source: "traffic",
+        //   paint: {
+        //     "raster-opacity": 0.7,
+        //   },
+        // });
+        
+        // map.addSource("traffic-hex", {
+        //     type: "geojson",
+        //     data: cityGeojsonFile,
+        // });
 
-      // map.addLayer({
-      //   id: "traffic",
-      //   type: "raster",
-      //   source: "traffic",
-      //   paint: {
-      //     "raster-opacity": 0.7,
-      //   },
-      // });
-      
-      map.addSource("traffic-hex", {
+        const response = await fetch(
+            `http://localhost:8000/city/${city_name}/congestion_graph`,
+          );
+
+        if (!response.ok) {
+          throw new Error(
+            `Failed to fetch GeoJSON: ${response.status} ${response.statusText}`,
+          );
+        }
+          
+        const geoJson = await response.json();
+          
+        map.addSource("traffic-hex", {
           type: "geojson",
-          data: cityGeojsonFile,
-      });
+          data: geoJson,
+        });
   
-      map.addLayer({
-          id: "traffic-hex",
-          type: "fill",
+        map.addLayer({
+            id: "traffic-hex",
+            type: "fill",
+            source: "traffic-hex",
+    
+            paint: {
+                "fill-color": ["get", "color"],
+                "fill-opacity": 0.40,
+            },
+        });
+        map.addLayer({
+          id: "traffic-hex-outline",
+          type: "line",
           source: "traffic-hex",
-  
           paint: {
-              "fill-color": ["get", "color"],
-              "fill-opacity": 0.40,
+            "line-color": "#333",
+            "line-width": 0.5,
           },
+        });
       });
-      map.addLayer({
-        id: "traffic-hex-outline",
-        type: "line",
-        source: "traffic-hex",
-        paint: {
-          "line-color": "#333",
-          "line-width": 0.5,
-        },
-      });
-    });
+    } catch (error) {
+        console.error("Failed to load congestion GeoJSON:", error);
+      }
 
     return () => {
       map.remove();
       mapRef.current = null;
     };
-  }, []);
+  }, [cords]);
 
   return (
     <div

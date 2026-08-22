@@ -1,0 +1,128 @@
+{
+  "riyadh": {
+    "slug": "riyadh",
+    "name": "Riyadh",
+    "country": "Saudi Arabia",
+    "starting_date": "01/04/2026",
+    "ending_date": "15/04/2026",
+    "stats": {
+      "minTLI": {
+        "value": "0.99"
+      },
+      "avgTLI": {
+        "value": "0.95"
+      },
+      "maxTLI": {
+        "value": "0.90"
+      }
+    },
+    "mapSeed": 42,
+    "geojsonFile": "congestion_hexagon_Riyadh.geojson",
+    "mapCenter": [46.6753, 24.7136]
+  },
+  "jeddah": {
+    "slug": "jeddah",
+    "name": "Jeddah",
+    "country": "Saudi Arabia",
+    "starting_date": "01/04/2026",
+    "ending_date": "15/04/2026",
+    "stats": {
+      "minTLI": {
+        "value": "0.99"
+      },
+      "avgTLI": {
+        "value": "0.96"
+      },
+      "maxTLI": {
+        "value": "0.91"
+      }
+    },
+    "mapSeed": 42,
+    "geojsonFile": "congestion_hexagon_Jeddah.geojson",
+    "mapCenter": [39.1611, 21.5294]
+  },
+  "dammam": {
+    "slug": "dammam",
+    "name": "Dammam",
+    "country": "Saudi Arabia",
+    "starting_date": "01/04/2026",
+    "ending_date": "15/04/2026",
+    "stats": {
+      "minTLI": {
+        "value": "0.99"
+      },
+      "avgTLI": {
+        "value": "0.97"
+      },
+      "maxTLI": {
+        "value": "0.95"
+      }
+    },
+    "mapSeed": 42,
+    "geojsonFile": "congestion_hexagon_Dammam.geojson",
+    "mapCenter": [50.0905, 26.4241]
+  },
+  "al_khobar": {
+    "slug": "al_khobar",
+    "name": "Al Khobar",
+    "country": "Saudi Arabia",
+    "starting_date": "01/04/2026",
+    "ending_date": "15/04/2026",
+    "stats": {
+      "minTLI": {
+        "value": "0.99"
+      },
+      "avgTLI": {
+        "value": "0.97"
+      },
+      "maxTLI": {
+        "value": "0.94"
+      }
+    },
+    "mapSeed": 42,
+    "geojsonFile": "congestion_hexagon_Al khobar.geojson",
+    "mapCenter": [50.1932, 26.2199]
+  },
+  "dhahran": {
+    "slug": "dhahran",
+    "name": "Dhahran",
+    "country": "Saudi Arabia",
+    "starting_date": "01/04/2026",
+    "ending_date": "15/04/2026",
+    "stats": {
+      "minTLI": {
+        "value": "0.99"
+      },
+      "avgTLI": {
+        "value": "0.98"
+      },
+      "maxTLI": {
+        "value": "0.96"
+      }
+    },
+    "mapSeed": 42,
+    "geojsonFile": "congestion_hexagon_Dhahran.geojson",
+    "mapCenter": [50.043, 26.2381]
+  },
+  "al_qatif": {
+    "slug": "al_qatif",
+    "name": "Al Qatif",
+    "country": "Saudi Arabia",
+    "starting_date": "01/04/2026",
+    "ending_date": "15/04/2026",
+    "stats": {
+      "minTLI": {
+        "value": "0.98"
+      },
+      "avgTLI": {
+        "value": "0.97"
+      },
+      "maxTLI": {
+        "value": "0.96"
+      }
+    },
+    "mapSeed": 42,
+    "geojsonFile": "congestion_hexagon_Al Qatif.geojson",
+    "mapCenter": [49.9985, 26.5781]
+  }
+}
