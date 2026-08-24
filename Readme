@@ -1,0 +1,31 @@
+# TomTom Traffic ETL
+
+```bash
+export TOMTOM_API_KEY="..."          # required
+export TOMTOM_ZOOM=14                # optional, defaults shown
+export TOMTOM_RADIUS=6
+export TOMTOM_OUTPUT_DIR=dataset
+export TOMTOM_MAX_WORKERS=8
+export TOMTOM_RPS=8                  # requests/sec cap, tune to your TomTom plan
+```
+
+One-off run:
+
+```python
+from tomtom_pipeline.config import PipelineConfig
+from tomtom_pipeline.pipeline import run_city
+
+cfg = PipelineConfig.from_env()
+metadata = run_city(cfg, "Riyadh")
+print(metadata["geotiff_path"])
+```
+
+Continuous collection for all configured cities, one independent job per city:
+
+```bash
+python -m tomtom_pipeline.scheduler
+```
+
+Before production use, open `color_processing.py` and replace the placeholder
+`LEGEND` RGB values with colors verified against TomTom's actual tile output
+for your chosen `style` — see the module docstring for why this matters.
