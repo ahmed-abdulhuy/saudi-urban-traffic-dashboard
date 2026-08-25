@@ -27,6 +27,16 @@ def _get_required_env(name: str) -> str:
     return value
 
 
+def get_output_dir() -> str:
+    """Resolves where snapshot output lives, independent of
+    PipelineConfig.from_env(). Endpoints that only *read* already-collected
+    data (serving the latest GeoTIFF, metadata, etc.) shouldn't need to
+    provide a TomTom API key just to find the output directory -- that key
+    is only needed by the process that actually calls TomTom.
+    """
+    return os.environ.get("TOMTOM_OUTPUT_DIR", "dataset")
+
+
 @dataclass(frozen=True)
 class PipelineConfig:
     api_key: str
@@ -49,7 +59,7 @@ class PipelineConfig:
             radius=int(os.environ.get("TOMTOM_RADIUS", 6)),
             style=os.environ.get("TOMTOM_STYLE", "relative"),
             tile_size=int(os.environ.get("TOMTOM_TILE_SIZE", 512)),
-            output_dir=os.environ.get("TOMTOM_OUTPUT_DIR", "dataset"),
+            output_dir=get_output_dir(),
             max_workers=int(os.environ.get("TOMTOM_MAX_WORKERS", 8)),
             request_timeout=int(os.environ.get("TOMTOM_REQUEST_TIMEOUT", 30)),
             requests_per_second=float(os.environ.get("TOMTOM_RPS", 8.0)),

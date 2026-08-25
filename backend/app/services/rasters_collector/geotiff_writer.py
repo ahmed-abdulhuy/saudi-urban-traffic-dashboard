@@ -5,6 +5,7 @@ the affine transform is exact rather than approximated.
 from __future__ import annotations
 
 import logging
+import os
 from typing import Dict
 
 import numpy as np
@@ -27,6 +28,10 @@ def write_categorized_geotiff(
 ) -> None:
     """`categories` must be a single-band (H, W) uint8 array already
     composited onto the (2*radius+1) tile grid centered on (center_x, center_y).
+
+    Written atomically (temp file + os.replace): dst_path is now served
+    directly over HTTP by the API, so a client request landing mid-write
+    must never be able to read a partial/corrupt file.
     """
     west, south, east, north = grid_bounds_meters(center_x, center_y, radius, zoom)
     height, width = categories.shape
@@ -49,9 +54,12 @@ def write_categorized_geotiff(
         "blockysize": 256,
     }
 
-    with rasterio.open(dst_path, "w", **profile) as dst:
+    os.makedirs(os.path.dirname(dst_path), exist_ok=True)
+    tmp_path = f"{dst_path}.{os.getpid()}.part"
+    with rasterio.open(tmp_path, "w", **profile) as dst:
         dst.write(categories, 1)
         # embed the legend so consumers don't need a side-channel to decode
         dst.update_tags(**{f"category_{v}": k for k, v in category_codes.items()})
+    os.replace(tmp_path, dst_path)  # atomic on POSIX
 
     log.info("Wrote GeoTIFF: %s (%dx%d, EPSG:3857)", dst_path, width, height)
