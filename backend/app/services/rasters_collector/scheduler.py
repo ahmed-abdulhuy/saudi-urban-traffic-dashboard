@@ -2,7 +2,7 @@
 
 Scheduling rules:
 - Riyadh: every 15 minutes, 24/7.
-- Jeddah, Dammam, Al khobar, Dhahran, Al Qatif:
+- Jeddah, Dammam, Al Khobar, Dhahran, Al Qatif:
     * Monday-Thursday, Saturday-Sunday:
         - 06:00-08:00 every 15 minutes
         - 14:00-16:00 every 15 minutes
@@ -65,7 +65,7 @@ CITIES = {
             ("14:00", "16:00"),
         ],
     },
-    "Al khobar": {
+    "Al Khobar": {
         "type": "windowed",
         "weekday_windows": {
             4: [("16:00", "19:00")],

@@ -27,6 +27,16 @@ def _get_required_env(name: str) -> str:
     return value
 
 
+def get_output_dir() -> str:
+    """Resolves where snapshot output lives, independent of
+    PipelineConfig.from_env(). Endpoints that only *read* already-collected
+    data (serving the latest GeoTIFF, metadata, etc.) shouldn't need to
+    provide a TomTom API key just to find the output directory -- that key
+    is only needed by the process that actually calls TomTom.
+    """
+    return os.environ.get("TOMTOM_OUTPUT_DIR", "dataset")
+
+
 @dataclass(frozen=True)
 class PipelineConfig:
     api_key: str
@@ -49,7 +59,7 @@ class PipelineConfig:
             radius=int(os.environ.get("TOMTOM_RADIUS", 6)),
             style=os.environ.get("TOMTOM_STYLE", "relative"),
             tile_size=int(os.environ.get("TOMTOM_TILE_SIZE", 512)),
-            output_dir=os.environ.get("TOMTOM_OUTPUT_DIR", "dataset"),
+            output_dir=get_output_dir(),
             max_workers=int(os.environ.get("TOMTOM_MAX_WORKERS", 8)),
             request_timeout=int(os.environ.get("TOMTOM_REQUEST_TIMEOUT", 30)),
             requests_per_second=float(os.environ.get("TOMTOM_RPS", 8.0)),
@@ -61,7 +71,7 @@ CITY_COORDS: Dict[str, Tuple[float, float]] = {
     "Riyadh": (24.7136, 46.6753),
     "Jeddah": (21.5294, 39.1611),
     "Dammam": (26.4241, 50.0905),
-    "Al khobar": (26.2199, 50.1932),
+    "Al Khobar": (26.2199, 50.1932),
     "Dhahran": (26.2381, 50.0430),
     "Al Qatif": (26.5781, 49.9985),
 }

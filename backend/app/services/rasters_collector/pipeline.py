@@ -19,7 +19,7 @@ Fixes vs. the original scripts:
   removes the possibility entirely, while still letting a genuinely
   interrupted run resume from its own partial tile cache.
 - Calibration/masking happens per-tile (512x512) before compositing, not on
-  the full stitched mosaic, to keep the nearest-neighbor classification's
+  the full stitched mosaic, to keep the nearest-neighbour classification's
   memory use small regardless of `radius`.
 - A tile that failed to download degrades to a nodata block instead of
   crashing the whole run.
@@ -41,6 +41,7 @@ from .color_processing import CATEGORY_CODES, LEGEND, calibrate_and_mask, conges
 from ...core.config import CITY_COORDS, PipelineConfig
 from .downloader import TileResult, download_tiles_for_grid
 from .geotiff_writer import write_categorized_geotiff
+from ...services.congestion_geojson.hex_congestion import HexGridConfig, build_hexagon_geojson
 from .tile_math import latlon_to_tile
 
 log = logging.getLogger("tomtom_pipeline")
@@ -98,16 +99,40 @@ def save_metadata(output_dir: str, index: str, metadata: Dict) -> str:
     short_ts = metadata["timestamp"].replace(":", "-")
     hashid = hashlib.sha1(json.dumps(metadata, sort_keys=True, default=str).encode()).hexdigest()[:8]
     fname = os.path.join(idx_dir, f"{index}_{short_ts}_{hashid}.json")
-    with open(fname, "w", encoding="utf-8") as f:
-        json.dump(metadata, f, indent=2, ensure_ascii=False, default=str)
+    _write_json_atomic(fname, metadata)
     return fname
 
 
+def _write_json_atomic(path: str, data: Dict) -> None:
+    tmp_path = f"{path}.{os.getpid()}.part"
+    with open(tmp_path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False, default=str)
+    os.replace(tmp_path, path)
+
+
+def save_latest_pointer(output_dir: str, metadata: Dict) -> str:
+    """Atomically point `{output_dir}/latest.json` at the run that just
+    finished, so 'give me the latest snapshot' is an O(1) file read instead
+    of listing (and sorting) a metadata directory that grows by thousands
+    of files over time. Written last, after the GeoTIFF itself is already
+    final -- so the moment this pointer is visible, the file it points to
+    is guaranteed complete."""
+    path = os.path.join(output_dir, "latest.json")
+    _write_json_atomic(path, metadata)
+    return path
+
+
 def run_snapshot(
-    cfg: PipelineConfig, city_name: str, lat: float, lon: float, index: Optional[str] = None
+    cfg: PipelineConfig,
+    city_name: str,
+    lat: float,
+    lon: float,
+    index: Optional[str] = None,
+    hex_cfg: HexGridConfig = HexGridConfig(),
 ) -> Dict:
     """One full ETL pass: fetch tiles, calibrate + mask each, stitch,
-    write GeoTIFF, write metadata. Returns the metadata dict."""
+    write GeoTIFF, build the hexagon congestion layer, write metadata.
+    Returns the metadata dict."""
     index = index or _generate_run_id()
     output_dir = os.path.join(cfg.output_dir, city_name)
     os.makedirs(output_dir, exist_ok=True)
@@ -131,6 +156,22 @@ def run_snapshot(
         categories, center_x, center_y, cfg.radius, cfg.zoom, geotiff_path, CATEGORY_CODES
     )
 
+    # Derived from the GeoTIFF that was just written, not from the tiles
+    # directly -- keeps this a pure post-processing step over the already-
+    # calibrated raster. A failure here shouldn't cost the snapshot that
+    # already succeeded, so it degrades to "no hex layer this run" rather
+    # than raising.
+    hexagon_path: Optional[str] = None
+    try:
+        hex_dir = os.path.join(output_dir, "hexagons")
+        os.makedirs(hex_dir, exist_ok=True)
+        hexagon_path = os.path.join(hex_dir, f"traffic_hex_{city_name}_{index}_{ts.replace(':', '-')}.geojson")
+        hex_geojson = build_hexagon_geojson(geotiff_path, hex_cfg)
+        _write_json_atomic(hexagon_path, hex_geojson)
+    except Exception:
+        log.exception("[%s] hexagon layer generation failed for %s -- continuing without it", index, city_name)
+        hexagon_path = None
+
     metadata = {
         "city": city_name,
         "run_index": index,
@@ -147,6 +188,7 @@ def run_snapshot(
         "failed_tiles": [{"x": t.x, "y": t.y, "error": t.error} for t in failed],
         "geotiff_path": geotiff_path,
         "geotiff_size": {"width": int(categories.shape[1]), "height": int(categories.shape[0])},
+        "hexagon_geojson_path": hexagon_path,
         "crs": "EPSG:3857",
         "category_codes": CATEGORY_CODES,
         "legend_rgb": LEGEND,
@@ -155,6 +197,7 @@ def run_snapshot(
     }
 
     meta_path = save_metadata(output_dir, index, metadata)
+    save_latest_pointer(output_dir, metadata)
     log.info(
         "[%s] snapshot complete geotiff=%s metadata=%s (%d/%d tiles ok)",
         index, geotiff_path, meta_path, len(tiles) - len(failed), len(tiles),
