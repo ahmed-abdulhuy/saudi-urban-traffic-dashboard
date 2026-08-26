@@ -80,7 +80,7 @@
       }
     },
     "mapSeed": 42,
-    "geojsonFile": "congestion_hexagon_Al khobar.geojson",
+    "geojsonFile": "congestion_hexagon_Al Khobar.geojson",
     "mapCenter": [50.1932, 26.2199]
   },
   "dhahran": {

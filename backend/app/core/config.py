@@ -71,7 +71,7 @@ CITY_COORDS: Dict[str, Tuple[float, float]] = {
     "Riyadh": (24.7136, 46.6753),
     "Jeddah": (21.5294, 39.1611),
     "Dammam": (26.4241, 50.0905),
-    "Al khobar": (26.2199, 50.1932),
+    "Al Khobar": (26.2199, 50.1932),
     "Dhahran": (26.2381, 50.0430),
     "Al Qatif": (26.5781, 49.9985),
 }

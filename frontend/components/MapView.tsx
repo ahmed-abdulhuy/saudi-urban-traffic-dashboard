@@ -89,7 +89,7 @@ export default function MapViewer({ city_name, cords }: { city_name: string, cor
         // });
 
         const response = await fetch(
-            `http://localhost:8000/city/${city_name}/congestion_graph`,
+            `http://localhost:8000/city/${city_name}/traffic/latest/hexagons`,
           );
 
         if (!response.ok) {

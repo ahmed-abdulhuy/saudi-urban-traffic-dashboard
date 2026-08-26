@@ -160,10 +160,11 @@ def get_latest_traffic_metadata(city_name: str):
     tile success rate, etc. Use /traffic/latest.tif to fetch the raster
     itself."""
     metadata = _latest_snapshot_metadata(city_name)
-    # geotiff_path is a server-local filesystem path -- don't leak it,
-    # point at the sibling endpoint instead.
-    metadata = {k: v for k, v in metadata.items() if k != "geotiff_path"}
+    # geotiff_path/hexagon_geojson_path are server-local filesystem paths --
+    # don't leak them, point at the sibling endpoints instead.
+    metadata = {k: v for k, v in metadata.items() if k not in ("geotiff_path", "hexagon_geojson_path")}
     metadata["download_url"] = f"/city/{city_name}/traffic/latest.tif"
+    metadata["hexagons_url"] = f"/city/{city_name}/traffic/latest/hexagons"
     return metadata
 
 
@@ -195,3 +196,31 @@ def get_latest_traffic_geotiff(city_name: str):
             "X-Snapshot-Timestamp": metadata.get("timestamp", ""),
         },
     )
+
+
+@app.get("/city/{city_name}/traffic/latest/hexagons")
+def get_latest_traffic_hexagons(city_name: str):
+    """Hexagon-grid congestion layer for the most recent snapshot, as a
+    GeoJSON FeatureCollection in WGS84 (lon/lat) -- ready to drop onto a
+    Leaflet/Mapbox GL/deck.gl map. Each feature carries congestion_score
+    (0=gridlock..1=free flow), congestion_level, a display color, and the
+    number of road pixels it was averaged from.
+
+    Derived from the GeoTIFF at /traffic/latest.tif, not the raw tiles --
+    if hex generation failed for this particular run (logged, non-fatal to
+    the snapshot itself), this returns 404 rather than stale data."""
+    metadata = _latest_snapshot_metadata(city_name)
+    hexagon_path_str = metadata.get("hexagon_geojson_path")
+    if not hexagon_path_str:
+        raise HTTPException(
+            status_code=404,
+            detail="Hexagon layer was not generated for the latest snapshot",
+        )
+
+    hexagon_path = Path(hexagon_path_str)
+    if not hexagon_path.exists():
+        log.error("latest.json for %s points at a missing hexagon file: %s", city_name, hexagon_path)
+        raise HTTPException(status_code=404, detail="Latest hexagon layer is no longer available")
+
+    with open(hexagon_path, "r", encoding="utf-8") as f:
+        return json.load(f)
