@@ -133,7 +133,7 @@ export default function MapViewer({ city_name, cords }: { city_name: string, cor
       map.remove();
       mapRef.current = null;
     };
-  }, [cords]);
+  }, [city_name, cords]);
 
   return (
     <div

@@ -46,11 +46,8 @@ export default async function CityDashboardPage({
     notFound();
   }
 
-  console.log("City data:", city);
-
   return (
     <div className="wrap">
-      <CitySwitcher activeSlug={city.slug} />
 
       <div className="eyebrow">Traffic overview</div>
       <h1 className="title">

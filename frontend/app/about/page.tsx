@@ -6,11 +6,6 @@ export const metadata = {
 
 const CITIES = [
   { name: "Riyadh", lat: 24.7136, lon: 46.6753 },
-  { name: "Jeddah", lat: 21.5294, lon: 39.1611 },
-  { name: "Dammam", lat: 26.4241, lon: 50.0905 },
-  { name: "Al Khobar", lat: 26.2199, lon: 50.1932 },
-  { name: "Dhahran", lat: 26.2381, lon: 50.043 },
-  { name: "Al Qatif", lat: 26.5781, lon: 49.9985 },
 ];
 
 const TRAFFIC_STATES = [
@@ -28,32 +23,6 @@ const FINDINGS = [
       "Persistent congestion throughout the day",
       "Major hotspots: King Fahd Road, Southern & Northern Ring Roads, Makkah Al Mukarramah Road",
     ],
-  },
-  {
-    city: "Jeddah",
-    points: [
-      "More spatially distributed congestion",
-      "Significant congestion on Al Haramain Road, Al-Madinah Al-Munawarah Road, King Abdulaziz Road",
-    ],
-  },
-  {
-    city: "Dammam Metropolitan",
-    points: [
-      "Localized congestion behavior",
-      "Strong congestion around Dhahran-Jubail Expressway, King Fahd Road, Al Adamah district",
-    ],
-  },
-  {
-    city: "Dhahran",
-    points: ["Lowest average congestion levels", "Mostly localized traffic peaks"],
-  },
-  {
-    city: "Al Khobar",
-    points: ["Congestion concentrated on major corridors", "Significant weekend traffic variation"],
-  },
-  {
-    city: "Al Qatif",
-    points: ["Moderate localized congestion", "Concentrated at intersections and causeways"],
   },
 ];
 

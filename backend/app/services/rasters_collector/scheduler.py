@@ -2,12 +2,6 @@
 
 Scheduling rules:
 - Riyadh: every 15 minutes, 24/7.
-- Jeddah, Dammam, Al Khobar, Dhahran, Al Qatif:
-    * Monday-Thursday, Saturday-Sunday:
-        - 06:00-08:00 every 15 minutes
-        - 14:00-16:00 every 15 minutes
-    * Friday:
-        - 16:00-19:00 every 15 minutes
 
 All times use the Asia/Riyadh timezone.
 
@@ -44,57 +38,7 @@ FREQ_MINUTES = 15
 CITIES = {
     "Riyadh": {
         "type": "continuous",
-    },
-    "Jeddah": {
-        "type": "windowed",
-        "weekday_windows": {
-            4: [("16:00", "19:00")],  # Friday
-        },
-        "default_windows": [
-            ("06:00", "08:00"),
-            ("14:00", "16:00"),
-        ],
-    },
-    "Dammam": {
-        "type": "windowed",
-        "weekday_windows": {
-            4: [("16:00", "19:00")],
-        },
-        "default_windows": [
-            ("06:00", "08:00"),
-            ("14:00", "16:00"),
-        ],
-    },
-    "Al Khobar": {
-        "type": "windowed",
-        "weekday_windows": {
-            4: [("16:00", "19:00")],
-        },
-        "default_windows": [
-            ("06:00", "08:00"),
-            ("14:00", "16:00"),
-        ],
-    },
-    "Dhahran": {
-        "type": "windowed",
-        "weekday_windows": {
-            4: [("16:00", "19:00")],
-        },
-        "default_windows": [
-            ("06:00", "08:00"),
-            ("14:00", "16:00"),
-        ],
-    },
-    "Al Qatif": {
-        "type": "windowed",
-        "weekday_windows": {
-            4: [("16:00", "19:00")],
-        },
-        "default_windows": [
-            ("06:00", "08:00"),
-            ("14:00", "16:00"),
-        ],
-    },
+    }
 }
 
 
