@@ -742,3 +742,30 @@ h1.title .flag {
     grid-template-columns: 1fr;
   }
 }
+
+.chart-controls {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+.chart-controls input[type="date"] {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  color: var(--ink);
+}
+.chart-status {
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+  padding: 24px 0;
+}
+.chart-status.chart-error {
+  color: var(--accent-red);
+}
+.congestion-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
