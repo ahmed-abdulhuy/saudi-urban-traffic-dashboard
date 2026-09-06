@@ -1,17 +1,17 @@
 """Color calibration and masking for TomTom Traffic Flow raster tiles.
 
 TomTom's tiles are anti-aliased PNGs -- road pixels are blended with
-neighboring colors, so a raw pixel is rarely an exact legend color.
+neighbouring colors, so a raw pixel is rarely an exact legend color.
 "Calibration" here means snapping every pixel to the nearest color in a
-known legend (nearest-neighbor in RGB space, within a distance threshold);
+known legend (nearest-neighbour in RGB space, within a distance threshold);
 "masking" then collapses that legend down to a small number of
 category codes plus a congestion weight for aggregate scoring.
 
 The legend below (grey/red/yellow/green) reflects the 4-color congestion
 scheme already validated against real tile output and used elsewhere in
-this project (COLOR_TO_WEIGHT_MAP / CONGESTION_META). If you change
-`style` or zoom, re-verify these values still match what TomTom renders --
-don't assume they're universal across every product configuration.
+this project. If you change `style` or zoom, re-verify these values still
+match what TomTom renders -- don't assume they're universal across every
+product configuration.
 """
 from __future__ import annotations
 
@@ -35,6 +35,14 @@ CATEGORY_SPEC: Dict[str, Dict] = {
 CATEGORY_CODES: Dict[str, int] = {"no_data": 0, **{k: v["code"] for k, v in CATEGORY_SPEC.items()}}
 CATEGORY_WEIGHTS: Dict[int, float] = {v["code"]: v["weight"] for v in CATEGORY_SPEC.values()}
 LEGEND: Dict[str, RGB] = {k: v["rgb"] for k, v in CATEGORY_SPEC.items()}
+
+# Derived from CATEGORY_SPEC rather than hand-maintained separately -- a
+# second copy of "code -> label"/"label -> color" is exactly the kind of
+# thing that quietly drifts out of sync when the legend changes.
+CODE_TO_LABEL: Dict[int, str] = {v["code"]: k for k, v in CATEGORY_SPEC.items()}
+LEVEL_COLORS: Dict[str, str] = {
+    k: f"rgb({v['rgb'][0]},{v['rgb'][1]},{v['rgb'][2]})" for k, v in CATEGORY_SPEC.items()
+}
 
 # Euclidean RGB distance beyond which a pixel is treated as unclassifiable
 # (road edges, anti-aliasing halos, basemap bleed-through) rather than force-
@@ -92,7 +100,12 @@ def calibrate_and_mask(
 def congestion_index(categories: np.ndarray, weights: Dict[int, float] = CATEGORY_WEIGHTS) -> float:
     """Mean congestion weight over classified pixels (no_data excluded), on
     a 0 (gridlock) - 1 (free flow) scale -- a scalar Traffic-Level-Index for
-    the whole snapshot, e.g. for time-series tracking or map coloring."""
+    the whole snapshot, e.g. for time-series tracking or map coloring.
+    Returns float('nan') when there is no classified data at all (e.g.
+    every tile failed) -- callers that serialize this to JSON must convert
+    NaN to null themselves (see pipeline._json_safe_float), since Python's
+    json module accepts NaN as a non-standard extension that most other
+    JSON parsers, including any JS frontend's JSON.parse, will reject."""
     mask = categories != CATEGORY_CODES["no_data"]
     if not np.any(mask):
         return float("nan")
