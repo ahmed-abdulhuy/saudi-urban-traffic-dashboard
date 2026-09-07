@@ -146,10 +146,11 @@ def _latest_snapshot_metadata(city_name: str) -> dict:
     collector atomically rewrites after every successful run -- avoids
     listing/sorting a metadata directory that grows by thousands of files
     over time just to find the newest one."""
-    if city_name not in CITY_COORDS:
+    city_info = cities_data.get(city_name)
+    if not city_info:
         raise HTTPException(status_code=404, detail="City not found")
 
-    meta_path = Path(get_output_dir()) / city_name / "latest.json"
+    meta_path = Path(get_output_dir()) / city_info.get('name') / "latest.json"
     if not meta_path.exists():
         raise HTTPException(
             status_code=404,
@@ -230,6 +231,29 @@ def get_latest_traffic_hexagons(city_name: str):
     with open(hexagon_path, "r", encoding="utf-8") as f:
         return json.load(f)
 
+#* Will be used in the future for downloading the latest geotiff file
+@app.get("/city/{city_name}/traffic/latest/geotiff")
+def get_latest_traffic_geotiff(city_name: str):
+    metadata = _latest_snapshot_metadata(city_name)
+    geotiff_path_str = metadata.get("geotiff_path")
+    if not geotiff_path_str:
+        raise HTTPException(
+            status_code=404,
+            detail="GeoTIFF file was not generated for the latest snapshot",
+        )
+
+    geotiff_path = Path(geotiff_path_str)
+    print(f"Geotiff path: {geotiff_path}")
+    if not geotiff_path.exists():
+        log.error("latest.json for %s points at a missing GeoTIFF file: %s", city_name, geotiff_path)
+        raise HTTPException(status_code=404, detail="Latest GeoTIFF file is no longer available")
+
+    return FileResponse(
+        geotiff_path,
+        media_type="application/x-geotiff",
+        filename=geotiff_path.name,
+        headers={"Cache-Control": "no-cache"},  # it's a "latest" endpoint, keep it fresh
+    )
 
 class HistoryRange(str, Enum):
     today = "today"
