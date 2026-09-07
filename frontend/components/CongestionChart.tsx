@@ -228,8 +228,6 @@ export default function CongestionChart() {
         timestamp: `2000-01-01T${point.time}`, 
         congestion_index: point.mean_congestion_index as number, 
       })); 
-      console.log("Profile response:", data.time_of_day);
-      console.log("Chart points:", chartPoints);
     } 
 
     if (chartPoints.length === 0) { 
@@ -250,15 +248,11 @@ export default function CongestionChart() {
      * -------------------------
      */
     const times = chartPoints.map((point) => 
-      new Date(point.timestamp).getTime() 
-  );
-    // const times = points.map((point) =>
-    //   new Date(point.timestamp).getTime()
-    // );
+      new Date(point.timestamp).getTime()
+    );
 
     const tMin = Math.min(...times);
     const tMax = Math.max(...times);
-
     /*
      * If there is only one timestamp, create an artificial
      * time range so the point appears in the center.
@@ -334,7 +328,6 @@ export default function CongestionChart() {
      * Line coordinates
      * -------------------------
      */
-
     const coords = chartPoints.map((point) => ({ 
       x: x( 
         new Date(point.timestamp).getTime() 
@@ -414,7 +407,8 @@ export default function CongestionChart() {
     const labels = labelIndexes.map( 
       (index) => { 
         const point = chartPoints[index]; 
-        const label = isProfileResponse(data) ? data.time_of_day[index]?.time ?? "" : timeLabel(point.timestamp);
+        const label = timeLabel(point.timestamp);
+
         return { x: coords[index].x, label, }; 
       } 
     );
