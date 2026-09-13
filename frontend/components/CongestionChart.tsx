@@ -2,9 +2,7 @@
 
 import { useEffect, useId, useMemo, useState } from "react";
 
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-
+export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "/api";
 interface CongestionPoint {
   timestamp: string;
   congestion_index: number;
@@ -37,7 +35,7 @@ interface ProfileResponse {
   time_of_day: ProfilePoint[]; 
 }
 
-type ApiResponse = CongestionResponse | ProfileResponse;
+export type ApiResponse = CongestionResponse | ProfileResponse;
 
 type HistoryRange = 
   | "date" 
@@ -80,7 +78,7 @@ function timeLabel(timestamp: string): string {
   });
 }
 
-function isProfileResponse( 
+export function isProfileResponse( 
   response: ApiResponse 
   ): response is ProfileResponse { 
     return ( 
@@ -89,7 +87,7 @@ function isProfileResponse(
     ); 
 }
 
-function isPointResponse( 
+export function isPointResponse( 
     response: ApiResponse 
   ): response is CongestionResponse { 
   return "points" in response && Array.isArray(response.points); 

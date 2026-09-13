@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getAllCitySlugs } from "@/data/cities";
+// import { getAllCitySlugs } from "@/data/cities";
 import MapView from "@/components/MapView";
 import CongestionChart from "@/components/CongestionChart";
 interface CityDashboardPageProps {
@@ -8,15 +8,15 @@ interface CityDashboardPageProps {
   }>;
 }
 
-export function generateStaticParams(): { city: string }[] {
-  return getAllCitySlugs().map((slug) => ({
-    city: slug,
-  }));
-}
+// export function generateStaticParams(): { city: string }[] {
+//   return getAllCitySlugs().map((slug) => ({
+//     city: slug,
+//   }));
+// }
 
-async function getCityData(citySlug: string) {
+async function getCityData(citySlug: string, apiUrl: string = "http://backend:8000") {
   const response = await fetch(
-    `http://localhost:8000/city/${encodeURIComponent(citySlug)}`,
+    `${apiUrl}/city/${encodeURIComponent(citySlug)}`,
     {
       // Remove this if you want Next.js to cache the response.
       cache: "no-store",
@@ -35,7 +35,8 @@ export default async function CityDashboardPage({
   params,
 }: CityDashboardPageProps) {
   const { city: citySlug } = await params;
-  const city = await getCityData(citySlug);
+  const apiUrl = process.env.API_URL;
+  const city = await getCityData(citySlug, apiUrl);
 
   if (!city) {
     notFound();

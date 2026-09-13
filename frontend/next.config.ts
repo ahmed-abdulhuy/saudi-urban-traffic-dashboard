@@ -3,15 +3,15 @@ import type { NextConfig } from 'next';
 const isGitHubPages = process.env.GITHUB_ACTIONS === 'true';
 
 const nextConfig: NextConfig = {
-  output: 'export',
+  ...(isGitHubPages ? { output: "export" } : {}),
 
   basePath: isGitHubPages
-    ? '/saudi-urban-traffic-dashboard'
-    : '',
+    ? "/saudi-urban-traffic-dashboard"
+    : "",
 
   images: {
-    loader: 'custom',
-    loaderFile: './app/lib/imageLoader.ts',
+    loader: "custom",
+    loaderFile: "./lib/imageLoader.ts",
   },
 };
 
