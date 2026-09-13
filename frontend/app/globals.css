@@ -7,6 +7,7 @@
   --accent-red: #e0442f;
   --accent-green: #1f9d55;
   --accent-blue: #3a56b0;
+  --accent-grey: #7a7d84;
   --map-bg: #1b1d22;
 }
 
@@ -768,4 +769,34 @@ h1.title .flag {
   width: 100%;
   height: auto;
   display: block;
+}
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+  margin-top: 10px;
+  padding: 0 4px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.legend-line {
+  width: 20px;
+  height: 2px;
+  display: inline-block;
+  border-radius: 2px;
+}
+
+.legend-dashed {
+  height: 0;
+  border-top: 2px dashed;
+  background: none !important;
 }

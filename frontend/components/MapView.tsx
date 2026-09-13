@@ -37,9 +37,9 @@ export default function MapViewer({ city_name, cords, onAreaSelect }: MapViewerP
      
     try {
       map.on("load", async () => {
-
+        const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "/api";
         const response = await fetch(
-            `http://localhost:8000/city/${city_name}/traffic/latest/hexagons`,
+            `${API_URL}/city/${city_name}/traffic/latest/hexagons`,
           );
 
         if (!response.ok) {

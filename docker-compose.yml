@@ -1,0 +1,44 @@
+services:
+
+  backend:
+    build: ./backend
+    env_file:
+      - .env.local
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000" # HTTP Port
+      - "5678:5678" # Debug Port
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: >
+             python -Xfrozen_modules=off -m debugpy 
+              --listen 0.0.0.0:5678 
+              -m uvicorn app.main:app
+              --host 0.0.0.0 
+              --port 8000 
+              --reload
+
+
+  frontend:
+    build: ./frontend
+    volumes:
+      - ./frontend:/src          # mount entire project
+      - node_modules:/src/node_modules   # prevent node_modules overwrite
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+      - "9229:9229" # Debug Port
+
+    env_file:
+      - .env.local
+
+
+
+    command: >
+      node --inspect=0.0.0.0:9229
+      ./node_modules/next/dist/bin/next dev
+
+volumes:
+  node_modules:

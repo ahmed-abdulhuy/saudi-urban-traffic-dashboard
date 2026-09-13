@@ -2,9 +2,7 @@
 
 import { useEffect, useId, useMemo, useState } from "react";
 
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-
+export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "/api";
 interface CongestionPoint {
   timestamp: string;
   congestion_index: number;
@@ -22,6 +20,10 @@ interface ProfilePoint {
   time: string; 
   congestion_index: number | null; 
   mean_congestion_index: number | null;
+  min_congestion_index: number | null;
+  max_congestion_index: number | null;
+  median_congestion_index: number | null;
+  p10_congestion_index: number | null;
 }
 
 interface ProfileResponse { 
@@ -33,7 +35,7 @@ interface ProfileResponse {
   time_of_day: ProfilePoint[]; 
 }
 
-type ApiResponse = CongestionResponse | ProfileResponse;
+export type ApiResponse = CongestionResponse | ProfileResponse;
 
 type HistoryRange = 
   | "date" 
@@ -76,7 +78,7 @@ function timeLabel(timestamp: string): string {
   });
 }
 
-function isProfileResponse( 
+export function isProfileResponse( 
   response: ApiResponse 
   ): response is ProfileResponse { 
     return ( 
@@ -85,7 +87,7 @@ function isProfileResponse(
     ); 
 }
 
-function isPointResponse( 
+export function isPointResponse( 
     response: ApiResponse 
   ): response is CongestionResponse { 
   return "points" in response && Array.isArray(response.points); 
@@ -93,7 +95,7 @@ function isPointResponse(
 
 export default function CongestionChart() {
   const [date, setDate] = useState<string>(getLocalISODate);
-  const [range, setRange] = useState<HistoryRange>("today");
+  const [graphRange, setGraphRange] = useState<HistoryRange>("today");
   const [data, setData] = useState<ApiResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -110,13 +112,13 @@ export default function CongestionChart() {
       try {
         const params = new URLSearchParams();
 
-        if (range === "date") { 
+        if (graphRange === "date") { 
           if (!date) { 
             throw new Error("Invalid date."); 
           } 
           params.set("date", date); } 
           else { 
-            params.set("range", range); 
+            params.set("range", graphRange); 
           }
         
         const url =
@@ -161,10 +163,14 @@ export default function CongestionChart() {
     return () => {
       controller.abort();
     };
-  }, [date, range]);
+  }, [date, graphRange]);
 
   const {
     path,
+    minPath,
+    maxPath,
+    medianPath,
+    p10Path,
     areaPath,
     yTicks,
     xLabels,
@@ -172,6 +178,10 @@ export default function CongestionChart() {
     if (!data) {
       return { 
         path: "", 
+        minPath: "", 
+        maxPath: "", 
+        medianPath: "", 
+        p10Path: "",
         areaPath: "", 
         yTicks: [] as { 
           y: number; 
@@ -191,6 +201,10 @@ export default function CongestionChart() {
     let chartPoints: { 
       timestamp: string; 
       congestion_index: number; 
+      min_congestion_index: number | null; 
+      max_congestion_index: number | null;
+      median_congestion_index: number | null;
+      p10_congestion_index: number | null; 
     }[] = [];
     
     if (isPointResponse(data)) { 
@@ -209,6 +223,10 @@ export default function CongestionChart() {
         timestamp: point.timestamp, 
         congestion_index: 
           point.congestion_index as number, 
+        min_congestion_index: null,
+        max_congestion_index: null,
+        median_congestion_index: null,
+        p10_congestion_index: null,
       })) 
       .sort( 
         (a, b) => 
@@ -226,13 +244,21 @@ export default function CongestionChart() {
       ) 
       .map((point, index) => ({ 
         timestamp: `2000-01-01T${point.time}`, 
-        congestion_index: point.mean_congestion_index as number, 
+        congestion_index: point.mean_congestion_index as number,
+        min_congestion_index: point.min_congestion_index,
+        max_congestion_index: point.max_congestion_index,
+        median_congestion_index: point.median_congestion_index,
+        p10_congestion_index: point.p10_congestion_index,
       })); 
     } 
 
     if (chartPoints.length === 0) { 
       return { 
         path: "", 
+        minPath: "", 
+        maxPath: "", 
+        medianPath: "",
+        p10Path: "",
         areaPath: "", 
         yTicks: [], 
         xLabels: [], 
@@ -278,8 +304,13 @@ export default function CongestionChart() {
 
     const values = chartPoints.map( (point) => point.congestion_index );
 
-    const dataMin = Math.min(...values);
-    const dataMax = Math.max(...values);
+    const dataMin = ["last_week", "last_month"].includes(graphRange)
+      ? Math.min(...chartPoints.map((point) => point.min_congestion_index || 0))
+      : Math.min(...values);
+    
+      const dataMax = ["last_week", "last_month"].includes(graphRange)
+      ? Math.max(...chartPoints.map((point) => point.max_congestion_index || 1))
+      : Math.max(...values);
 
     const range = dataMax - dataMin;
 
@@ -335,10 +366,55 @@ export default function CongestionChart() {
       y: y(
         point.congestion_index), 
       })); 
-      const line = coords .map( (point, index) => 
+      const line = coords.map( (point, index) => 
         `${index === 0 ? "M" : "L"}${point.x.toFixed( 2 )},${point.y.toFixed(2)}` 
       )
       .join(" ");
+
+      const min_coords = chartPoints.map((point) => ({
+        x: x(
+          new Date(point.timestamp).getTime()
+        ),
+        y: point.min_congestion_index !== null ? y(point.min_congestion_index) : y(yMin),
+      }));
+      const min_line = min_coords.map(
+        (point, index) =>
+          `${index === 0 ? "M" : "L"}${point.x.toFixed( 2 )},${point.y.toFixed(2)}`
+      ).join(" ");
+
+      const max_coords = chartPoints.map((point) => ({
+        x: x(
+          new Date(point.timestamp).getTime()
+        ),
+        y: point.max_congestion_index !== null ? y(point.max_congestion_index) : y(yMax),
+      }));
+      const max_line = max_coords.map(
+        (point, index) =>
+          `${index === 0 ? "M" : "L"}${point.x.toFixed( 2 )},${point.y.toFixed(2)}`
+      ).join(" ");
+
+      const median_coords = chartPoints.map((point) => ({
+        x: x(
+          new Date(point.timestamp).getTime()
+        ),
+        y: point.median_congestion_index !== null ? y(point.median_congestion_index) : y(yMin),
+      }));
+      const median_line = median_coords.map(
+        (point, index) =>
+          `${index === 0 ? "M" : "L"}${point.x.toFixed( 2 )},${point.y.toFixed(2)}`
+      ).join(" ");
+
+      const p10_coords = chartPoints.map((point) => ({
+        x: x(
+          new Date(point.timestamp).getTime()
+        ),
+        y: point.p10_congestion_index !== null ? y(point.p10_congestion_index) : y(yMin),
+      }));
+      const p10_line = p10_coords.map(
+        (point, index) =>
+          `${index === 0 ? "M" : "L"}${point.x.toFixed( 2 )},${point.y.toFixed(2)}`
+      ).join(" ");
+
 
     /*
      * -------------------------
@@ -416,6 +492,10 @@ export default function CongestionChart() {
     return {
       path: line,
       areaPath: area,
+      minPath: min_line,
+      maxPath: max_line,
+      medianPath: median_line,
+      p10Path: p10_line,
       yTicks: ticks,
       xLabels: labels,
     };
@@ -439,13 +519,13 @@ export default function CongestionChart() {
   * Graph title 
   * -------------------------------------------------- 
   */ 
- const graphTitle = range === "date" ? 
+ const graphTitle = graphRange === "date" ? 
   "Congestion level over the day" : 
-  range === "today" ? 
+  graphRange === "today" ? 
   "Congestion level today" : 
-  range === "yesterday" ? 
+  graphRange === "yesterday" ? 
   "Congestion level yesterday" : 
-  range === "last_week" ? 
+  graphRange === "last_week" ? 
   "Typical congestion over the last week" : 
   "Typical congestion over the last month";
 
@@ -459,8 +539,8 @@ export default function CongestionChart() {
 
       <div className="chart-controls"> 
         <select 
-          value={range} 
-          onChange={(event) => setRange( event.target .value as HistoryRange ) } 
+          value={graphRange} 
+          onChange={(event) => setGraphRange( event.target .value as HistoryRange ) } 
           aria-label="Congestion history range" > {
             ( [ "today", "yesterday", "last_week", "last_month", "date", ] as HistoryRange[] )
             .map((value) => ( 
@@ -468,7 +548,7 @@ export default function CongestionChart() {
                 {rangeLabel[value]} 
               </option> ))} 
           </select> 
-          {range === "date" && ( 
+          {graphRange === "date" && ( 
             <input 
               type="date" 
               value={date} 
@@ -572,22 +652,120 @@ export default function CongestionChart() {
             ))}
 
             {/* Area */}
-            <path
-              d={areaPath}
-              fill={`url(#${gradientId})`}
-            />
 
             {/* Line */}
             <path
               d={path}
               fill="none"
               stroke="var(--accent-red)"
-              strokeWidth="2"
+              strokeWidth="1.5"
               strokeLinejoin="round"
               strokeLinecap="round"
             />
+            {graphRange === "last_week" || graphRange === "last_month" ? (
+              <>
+                <path
+                  d={minPath}
+                  fill="none"
+                  stroke="var(--accent-grey)"
+                  strokeWidth="1"
+                  strokeLinejoin="round"
+                  strokeLinecap="round"
+                  strokeDasharray="4 2"
+                />
+                <path
+                  d={maxPath}
+                  fill="none"
+                  stroke="var(--accent-grey)"
+                  strokeWidth="1"
+                  strokeLinejoin="round"
+                  strokeLinecap="round"
+                  strokeDasharray="4 2"
+                />
+                <path
+                  d={medianPath}
+                  fill="none"
+                  stroke="var(--accent-blue)"
+                  strokeWidth="1"
+                  strokeLinejoin="round"
+                  strokeLinecap="round"
+                  strokeDasharray="4 2"
+                />
+                <path
+                  d={p10Path}
+                  fill="none"
+                  stroke="var(--accent-green)"
+                  strokeWidth="1"
+                  strokeLinejoin="round"
+                  strokeLinecap="round"
+                  strokeDasharray="4 2"
+                />
+              </>
+            ):(<>
+              <path
+                d={areaPath}
+                fill={`url(#${gradientId})`}
+              />
+
+            </>)}
           </svg>
         )}
+
+          <div className="chart-legend">
+            <div className="legend-item">
+              <span
+                className="legend-line"
+                style={{
+                  backgroundColor: "var(--accent-red)",
+                }}
+              />
+              <span>Congestion Index</span>
+            </div>
+            {(graphRange === "last_week" || graphRange === "last_month") && (
+            <>
+              <div className="legend-item">
+                <span
+                  className="legend-line legend-dashed"
+                  style={{
+                    backgroundColor: "var(--accent-grey)",
+                  }}
+                />
+                <span>Minimum</span>
+              </div>
+
+              <div className="legend-item">
+                <span
+                  className="legend-line legend-dashed"
+                  style={{
+                    backgroundColor: "var(--accent-grey)",
+                  }}
+                />
+                <span>Maximum</span>
+              </div>
+
+              <div className="legend-item">
+                <span
+                  className="legend-line legend-dashed"
+                  style={{
+                    backgroundColor: "var(--accent-blue)",
+                  }}
+                />
+                <span>Median</span>
+              </div>
+
+              <div className="legend-item">
+                <span
+                  className="legend-line legend-dashed"
+                  style={{
+                    backgroundColor: "var(--accent-green)",
+                  }}
+                />
+                <span>P10</span>
+              </div>
+            </>
+         )}
+          </div>
+          
     </div>
   );
 }

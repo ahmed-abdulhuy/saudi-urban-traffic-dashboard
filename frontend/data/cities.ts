@@ -82,9 +82,9 @@ export function getAllCitySlugs(): string[] {
   return Object.keys(cities);
 }
 
-export function getCityData(slug: string): City | null {
-  return cities[slug as keyof typeof cities] ?? null;
-}
+// export function getCityData(slug: string): City | null {
+//   return cities[slug as keyof typeof cities] ?? null;
+// }
 
 export function getAllCitiesSummary(): CitySummary[] {
   return Object.values(cities).map((city) => ({

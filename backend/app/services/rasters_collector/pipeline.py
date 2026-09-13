@@ -107,6 +107,14 @@ def stitch_categorized(
     return canvas
 
 
+def _write_json_atomic(path: str, data: Dict) -> None:
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    tmp_path = f"{path}.{os.getpid()}.part"
+    with open(tmp_path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False, default=str, allow_nan=False)
+    os.replace(tmp_path, path)
+
+
 def save_metadata(output_dir: str, index: str, metadata: Dict) -> str:
     idx_dir = os.path.join(output_dir, "metadata")
     os.makedirs(idx_dir, exist_ok=True)
@@ -115,14 +123,6 @@ def save_metadata(output_dir: str, index: str, metadata: Dict) -> str:
     fname = os.path.join(idx_dir, f"{index}_{short_ts}_{hashid}.json")
     _write_json_atomic(fname, metadata)
     return fname
-
-
-def _write_json_atomic(path: str, data: Dict) -> None:
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    tmp_path = f"{path}.{os.getpid()}.part"
-    with open(tmp_path, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False, default=str, allow_nan=False)
-    os.replace(tmp_path, path)
 
 
 def save_latest_pointer(output_dir: str, metadata: Dict) -> str:
@@ -240,11 +240,59 @@ def _time_of_day_slot(timestamp_iso: str, slot_minutes: int) -> str:
     return f"{hh:02d}:{mm:02d}"
 
 
+_SLOT_STAT_FIELDS = (
+    "mean_congestion_index",
+    "median_congestion_index",
+    "p10_congestion_index",
+    "min_congestion_index",
+    "max_congestion_index",
+)
+
+
+def _slot_stats(slot: str, values: List[float]) -> Dict:
+    """Stats for one time-of-day bucket. mean/min/max alone can't tell a
+    slot that's consistently middling from one that's usually fine but has
+    a long tail of bad days -- median (typical reading) and p10 (how bad
+    the worst ~10% get) together do.
+
+    p10 is the 10th percentile: the value below which the worst 10% of
+    readings at this time-of-day fall. Since congestion_index runs
+    0=gridlock..1=free-flow, a *low* p10 is the "bad day" signal here --
+    the reverse of how p10 usually reads for a metric where high is bad
+    (e.g. p10 latency being good). A slot can have a normal-looking mean
+    and median while still having a low p10, which is exactly the case
+    this is meant to surface.
+
+    Uses numpy for the median/percentile rather than the stdlib `statistics`
+    module because numpy handles every sample size (including n=1) with one
+    code path -- statistics.quantiles raises on fewer than 2 points unless
+    handled specially, and this runs on buckets that can genuinely have
+    just one sample (e.g. one collected reading for a slot in a 7-day week
+    where a couple of days had an outage).
+    """
+    if not values:
+        return {"time": slot, **{f: None for f in _SLOT_STAT_FIELDS}, "sample_count": 0}
+
+    arr = np.asarray(values, dtype=np.float64)
+    return {
+        "time": slot,
+        "mean_congestion_index": round(float(arr.mean()), 4),
+        "median_congestion_index": round(float(np.median(arr)), 4),
+        "p10_congestion_index": round(float(np.percentile(arr, 10)), 4),
+        "min_congestion_index": round(float(arr.min()), 4),
+        "max_congestion_index": round(float(arr.max()), 4),
+        "sample_count": len(values),
+    }
+
+
 def get_time_of_day_profile(city_output_dir: str, days: List[date], slot_minutes: int = 15) -> List[Dict]:
     """Averages readings across `days` by time-of-day rather than by day:
     every ~01:00 reading across all the given days goes into one bucket,
     every ~01:15 reading into the next, and so on -- a "typical day" curve
     for that set of days, rather than one number per day.
+
+    Each slot reports mean, median, p10, min, max, and sample_count -- see
+    `_slot_stats` for why median and p10 matter alongside the mean.
 
     Computed fresh from the raw per-day JSONL files on every call rather
     than cached: a trailing window like "last week" shifts by one day
@@ -271,27 +319,7 @@ def get_time_of_day_profile(city_output_dir: str, days: List[date], slot_minutes
     for minute_of_day in range(0, 24 * 60, slot_minutes):
         hh, mm = divmod(minute_of_day, 60)
         slot = f"{hh:02d}:{mm:02d}"
-        values = buckets.get(slot, [])
-        if values:
-            profile.append(
-                {
-                    "time": slot,
-                    "mean_congestion_index": round(sum(values) / len(values), 4),
-                    "min_congestion_index": round(min(values), 4),
-                    "max_congestion_index": round(max(values), 4),
-                    "sample_count": len(values),
-                }
-            )
-        else:
-            profile.append(
-                {
-                    "time": slot,
-                    "mean_congestion_index": None,
-                    "min_congestion_index": None,
-                    "max_congestion_index": None,
-                    "sample_count": 0,
-                }
-            )
+        profile.append(_slot_stats(slot, buckets.get(slot, [])))
     return profile
 
 
