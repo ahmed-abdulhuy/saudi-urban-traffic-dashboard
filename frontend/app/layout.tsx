@@ -1,28 +1,35 @@
 import type { Metadata } from "next";
-import type { ReactNode } from "react";
-
+import { Inter, Newsreader } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/Header";
+
+const sans = Inter({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+});
+
+const display = Newsreader({
+  subsets: ["latin"],
+  variable: "--font-display",
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
+  display: "swap",
+});
 
 export const metadata: Metadata = {
-  title: "Traffic Dashboard",
-  description: "City traffic overview dashboard",
+  title: "Riyadh Traffic Congestion Monitor | King Saud University",
+  description:
+    "Live and historical road congestion analysis for Riyadh, published by King Saud University.",
 };
-
-interface RootLayoutProps {
-  children: ReactNode;
-}
 
 export default function RootLayout({
   children,
-}: RootLayoutProps): React.JSX.Element {
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html lang="en">
-
-      <body>
-        <Header />
-        {children}
-      </body>
+    <html lang="en" className={`${sans.variable} ${display.variable}`}>
+      <body className="font-sans antialiased">{children}</body>
     </html>
   );
 }
