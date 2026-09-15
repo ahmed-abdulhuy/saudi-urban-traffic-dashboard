@@ -1,36 +1,89 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Riyadh Traffic Congestion Monitor
 
-## Getting Started
+A Next.js (App Router) + Tailwind dashboard for the King Saud University
+traffic-congestion backend, built for government staff, media, and
+researchers who need a fast, credible read on current and historical road
+congestion in Riyadh.
 
-First, run the development server:
+## Running it
 
 ```bash
+npm install
+cp .env.local.example .env.local   # point at your FastAPI backend
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The backend is expected at `NEXT_PUBLIC_API_BASE_URL` (defaults to
+`http://localhost:8000`) and must have CORS enabled for the frontend's
+origin, since data is fetched both on the server and in the browser
+(the history range tabs re-fetch client-side).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## What's on the page
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Hero** — the latest traffic level index as a large number, plus the
+  run's metadata (timestamp, tile coverage, source), next to a live map.
+- **Map** — the hexagon grid from `/traffic/latest/hexagons`, colored by
+  `congestion_level`, with a hover/tap popup per cell showing the exact
+  score and sample size. Base tiles are the free CARTO "Positron" layer
+  (no API key required); swap the `TileLayer` URL in
+  `components/CongestionMap.tsx` if you'd rather use Mapbox/Google/Esri.
+- **Reporting-window summary** — the three headline stats from
+  `/city/riyadh` (`minTLI` / `avgTLI` / `maxTLI`).
+- **Congestion over time** — a tab switcher over the four history ranges.
+  `today`/`yesterday` return raw timestamped points and are drawn as a line
+  chart; `last_week`/`last_month` return a time-of-day aggregate and are
+  drawn as a mean line with a min–max band, since that's the more useful
+  read for a recurring pattern.
 
-## Learn More
+## Assumptions worth flagging
 
-To learn more about Next.js, take a look at the following resources:
+- **`/traffic/latest` vs. `/traffic/consgestion_graph`** — both routes in
+  the brief return identical payloads and the second looks like a
+  typo'd/older path, so the client only calls `/traffic/latest`. Point
+  `lib/api.ts` at the other route if that's actually the canonical one.
+- **Reading `minTLI`/`maxTLI`** — in the sample payload `minTLI` (0.99) is
+  a *higher* number than `maxTLI` (0.90), which only makes sense if the
+  index runs toward 1.0 for free-flowing traffic and toward 0 for
+  gridlock. `StatCards` labels them by what they mean ("best flow" /
+  "most congested") rather than repeating the literal field names, since
+  a government or media reader will be confused by "max" pointing at the
+  worse number. Worth confirming with whoever defined the schema.
+- **No auth/rate-limit info was given**, so requests are unauthenticated;
+  add headers in `lib/api.ts` if the real backend needs them.
+- **Map library**: React-Leaflet + OpenStreetMap/CARTO tiles, since no
+  specific provider or key was specified.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Design notes
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Palette and type were chosen to fit an official Saudi/academic publication
+rather than a generic SaaS dashboard: a warm limestone background, a Najdi
+green for the institutional identity, and a muted clay for secondary
+accents — with the four congestion colors reserved strictly for the data
+itself (map, legend, charts) so they stay meaningful rather than
+decorative. Headlines use a serif (Newsreader) for institutional weight;
+UI and body text use Inter.
 
-## Deploy on Vercel
+## Project structure
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+app/
+  layout.tsx        Fonts, metadata
+  page.tsx           Server component: fetches city/latest/hexagons/history
+  globals.css
+components/
+  Masthead.tsx        Title block + sponsorship line
+  HeroStat.tsx         Big current-index number + run metadata
+  MapPanel.tsx        Dynamic (no-SSR) wrapper around the Leaflet map
+  CongestionMap.tsx    The actual Leaflet/GeoJSON map
+  Legend.tsx           Congestion color key
+  StatCards.tsx        min/avg/max TLI cards
+  HistoryPanel.tsx     Range tabs + client-side re-fetch + chart switch
+  RangeTabs.tsx
+  TrendChart.tsx       Line chart for today/yesterday
+  TimeOfDayChart.tsx   Mean + band chart for last_week/last_month
+  Footer.tsx
+lib/
+  api.ts     Typed fetch helpers for every backend route
+  types.ts   Response/domain types
+  format.ts  Display helpers (time formatting, level colors)
+```
