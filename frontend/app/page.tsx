@@ -17,6 +17,7 @@ export default async function Page() {
     getLatestHexagons("riyadh", "server"),
     getHistory("today", "Riyadh", "server"),
   ]);
+  const mapKey = process.env.CARTOCDN_KEY || ""
 
   return (
     <main className="min-h-screen bg-sand-50">
@@ -26,7 +27,7 @@ export default async function Page() {
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,340px)_1fr] gap-8">
           <HeroStat run={run} />
           <div className="h-80 lg:h-auto border border-stone-900/10 overflow-hidden">
-            <MapPanel hexagons={hexagons} center={city.mapCenter} />
+            <MapPanel hexagons={hexagons} center={city.mapCenter} mapKey={mapKey} />
           </div>
         </div>
         <div className="mt-4">
