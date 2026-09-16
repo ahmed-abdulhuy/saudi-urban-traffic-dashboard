@@ -255,12 +255,6 @@ export default function MapViewer({ city_name, cords, onAreaSelect }: MapViewerP
             );
           }
         });
-
-        console.log(
-          "Loaded congestion hexagons:",
-          geoJson.features?.length ?? 0,
-        );
-
       });
 
     } catch (error) {

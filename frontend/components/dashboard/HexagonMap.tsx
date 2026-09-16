@@ -359,12 +359,6 @@ export function HexagonMapV2({ search = "", city_name, cords, onAreaSelect }: He
             );
           }
         });
-
-        console.log(
-          "Loaded congestion hexagons:",
-          geoJson.features?.length ?? 0,
-        );
-
       });
 
     } catch (error) {
