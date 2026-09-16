@@ -23,7 +23,7 @@ export default function TrendChart({ points }: { points: HistoryPoint[] }) {
 
   const data = points.map((p) => ({
     time: formatTime(p.timestamp),
-    index: Number(p.congestion_index.toFixed(4)),
+    index: Number(p.congestion_index?.toFixed(4)),
   }));
 
   return (
