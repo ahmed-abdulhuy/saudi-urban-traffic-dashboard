@@ -15,9 +15,11 @@ const CongestionMap = dynamic(() => import("./CongestionMap"), {
 export default function MapPanel({
   hexagons,
   center,
+  mapKey
 }: {
   hexagons: HexagonCollection;
   center: [number, number];
+  mapKey: string
 }) {
-  return <CongestionMap hexagons={hexagons} center={center} />;
+  return <CongestionMap hexagons={hexagons} center={center} mapKey={mapKey} />;
 }
