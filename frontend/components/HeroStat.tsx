@@ -12,7 +12,7 @@ export default function HeroStat({ run }: { run: CongestionRun }) {
         </p>
         <div className="mt-2 flex items-baseline gap-3">
           <span className="font-display text-7xl sm:text-8xl text-najdi leading-none">
-            {run.congestion_index.toFixed(2)}
+            {run.congestion_index?.toFixed(2)}
           </span>
           <span className="text-stone-500 text-sm">/ 1.00</span>
         </div>

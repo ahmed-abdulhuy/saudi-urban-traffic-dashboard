@@ -195,9 +195,20 @@ def read_day_points(city_output_dir: str, day: date) -> List[Dict]:
             if not line:
                 continue
             try:
-                points.append(json.loads(line))
+                point = json.loads(line)
             except json.JSONDecodeError:
                 log.warning("Skipping malformed line in %s", path)
+
+            cong_index = point.get("congestion_index")
+            if not isinstance(cong_index, (int, float)):
+                log.warning(
+                    "Skipping point without numeric congestion_index: %s",
+                    point
+                )
+                continue
+
+            points.append(point)
+
     return points
 
 
