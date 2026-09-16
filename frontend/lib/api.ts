@@ -13,19 +13,15 @@ async function getJSON<T>(
   revalidateSeconds = 60
 ): Promise<T> {
 
-  console.log("Environment Variable", process.env)
     const API_BASE = 
       componentType == "server" ?
         process.env.API_URL: 
         process.env.NEXT_PUBLIC_API_URL ?? "api";
-    console.log("\n\n componentType", componentType)
-    console.log("Env Vars:", process.env)
     if (!API_BASE) {
       throw new Error(
         `API URL is not configured for ${componentType} component`
       );
     }
-    console.log("BASE_URL", `${API_BASE.replace(/\/$/, "")}${path}`)
 
   const res = await fetch(`${API_BASE.replace(/\/$/, "")}${path}`, {
     next: { revalidate: revalidateSeconds },
